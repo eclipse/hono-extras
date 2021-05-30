@@ -1,0 +1,49 @@
+name: Hono Admin Tool
+
+on:
+  push:
+    branches: ["master"]
+    paths:
+      - 'hat/**'
+  pull_request:
+    branches: ["master"]
+    paths:
+      - 'hat/**'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+
+  build:
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+
+    - uses: actions/checkout@v2
+
+    - uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Build
+      run: cargo build --release --verbose
+
+    - name: Run tests
+      run: cargo test --release --verbose
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: hat-${{ matrix.os }}
+        path: |
+          target/release/hat
+          target/release/hat.exe
